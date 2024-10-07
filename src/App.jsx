@@ -10,20 +10,43 @@ function App() {
   const [uploadStatus, setUploadStatus] = useState(true);
   const { Dragger } = Upload;
 
+  const handleUpload = async ({ onSuccess, onError }) => {
+    const formData = new FormData();
+    Array.from(files).forEach((file, index) => {
+      const newFilename = `${baseFilename}_${index + 1}${file.name.substring(
+        file.name.lastIndexOf(".")
+      )}`;
+      formData.append("images", file, newFilename);
+    });
+
+    try {
+      await axios.post("http://localhost:3000/upload", formData);
+      onSuccess("Images uploaded successfully!");
+    } catch (error) {
+      console.error("Error uploading images:", error);
+      onError("Error uploading images.");
+    }
+  };
+
   const props = {
     name: "file",
     accept: "image/*",
     multiple: true,
-    action: "http://localhost:3000/upload",
+    customRequest: handleUpload,
     onChange(info) {
       const { status } = info.file;
+      if (info.fileList.length !== imageCount) {
+        alert(`Please upload exactly ${imageCount} images.`);
+        message.error(`${info.file.name} file upload failed.`);
+        return;
+      }
       if (status !== "uploading") {
         console.log(info.file, info.fileList);
       }
       if (status === "done") {
-        message.success(`${info.file.name} file uploaded successfully.`);
         setUploadStatus(false);
-        setFiles((prevFiles) => [...prevFiles, info.file]);
+        setFiles(info.fileList);
+        message.success(`${info.file.name} file uploaded successfully.`);
       } else if (status === "error") {
         message.error(`${info.file.name} file upload failed.`);
       }
@@ -43,29 +66,6 @@ function App() {
   //   }
   //   return e?.fileList;
   // };
-
-  const handleUpload = async () => {
-    if (files.length !== imageCount) {
-      alert(`Please upload exactly ${imageCount} images.`);
-      return;
-    }
-
-    const formData = new FormData();
-    Array.from(files).forEach((file, index) => {
-      const newFilename = `${baseFilename}_${index + 1}${file.name.substring(
-        file.name.lastIndexOf(".")
-      )}`;
-      formData.append("images", file, newFilename);
-    });
-
-    try {
-      await axios.post("http://localhost:3000/upload", formData);
-      alert("Images uploaded successfully!");
-    } catch (error) {
-      console.error("Error uploading images:", error);
-      alert("Error uploading images.");
-    }
-  };
 
   const handleDownload = async () => {
     try {
