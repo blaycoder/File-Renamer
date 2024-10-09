@@ -1,6 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
-import { Form, Input, InputNumber, Upload, message, Button, Flex } from "antd";
+import { Form, Input, InputNumber, Upload, message, Button } from "antd";
 import { InboxOutlined, DownloadOutlined } from "@ant-design/icons";
 
 function App() {
@@ -10,44 +10,45 @@ function App() {
   const [uploadStatus, setUploadStatus] = useState(true);
   const { Dragger } = Upload;
 
-  
-    const handleUpload = async () => {
-    if (files.length !== imageCount) {
-      alert(`Please upload exactly ${imageCount} images.`);
-      return;
+  // Custom file upload handler with renaming logic
+  const handleUpload = async ({ file, onSuccess, onError }) => {
+    const formData = new FormData();
+
+    //Loop through the uploaded files and rename
+    for (let file_counter = 0; file_counter < files.length; file_counter++) {
+      console.log(file_counter);
     }
 
-    const formData = new FormData();
-    Array.from(files).forEach((file, index) => {
-      const newFilename = `${baseFilename}_${index + 1}${file.name.substring(
-        file.name.lastIndexOf(".")
-      )}`;
-      formData.append("images", file, newFilename);
-    });
+    // Generate a new filename with baseFilename and index
+    const index = files.length + 1; // Track the index for naming
+    const newFilename = `${baseFilename}_${index}${file.name.substring(
+      file.name.lastIndexOf(".")
+    )}`;
+
+    // Append the file to the FormData with the new filename
+    formData.append("images", file, newFilename);
 
     try {
       await axios.post("http://localhost:3000/upload", formData);
-      alert("Images uploaded successfully!");
+      onSuccess("File uploaded successfully");
+      message.success(`${file.name} uploaded and renamed  successfully`);
     } catch (error) {
-      console.error("Error uploading images:", error);
-      alert("Error uploading images.");
+      console.error("Error uploading file:", error);
+      onError("Error uploading file");
+      message.error(`Error uploading ${newFilename}`);
     }
   };
-  
+
   const props = {
     name: "file",
     accept: "image/*",
     multiple: true,
-    customRequest: handleUpload,
+    customRequest: handleUpload, // Use custom request for file uploads
     onChange(info) {
       const { status } = info.file;
-      if (status !== "uploading") {
-        console.log(info.file, info.fileList);
-      }
       if (status === "done") {
-          setUploadStatus(false);
-          setFiles(info.fileList);
-        message.success(`${info.file.name} file uploaded successfully.`);
+        setUploadStatus(false); // Enable the download button after upload
+        setFiles(info.fileList); // Keep track of uploaded files
       } else if (status === "error") {
         message.error(`${info.file.name} file upload failed.`);
       }
@@ -56,18 +57,6 @@ function App() {
       console.log("Dropped files", e.dataTransfer.files);
     },
   };
-
-  const handleFileChange = (event) => {
-    setFiles(event.target.files);
-  };
-
-  // const normFile = (e) => {
-  //   if (Array.isArray(e)) {
-  //     return e;
-  //   }
-  //   return e?.fileList;
-  // };
-
 
   const handleDownload = async () => {
     try {
@@ -89,7 +78,7 @@ function App() {
 
   return (
     <div style={{ padding: "20px" }}>
-      <h1 className="text-3xl font-bold underline">Hello world!</h1>
+      <h1 className="text-3xl font-bold underline">File Upload and Rename</h1>
       <Form
         labelCol={{
           span: 4,
@@ -102,63 +91,45 @@ function App() {
           maxWidth: 600,
         }}
       >
-        <Form.Item label="Input">
-          <Input />
+        <Form.Item label="Base Filename">
+          <Input
+            value={baseFilename}
+            onChange={(e) => setBaseFilename(e.target.value)}
+          />
         </Form.Item>
 
-        <Form.Item label="InputNumber">
-          <InputNumber />
+        <Form.Item label="Number of Images">
+          <InputNumber
+            min={1}
+            value={imageCount}
+            onChange={(value) => setImageCount(value)}
+          />
         </Form.Item>
-        <Dragger {...props}>
-          <p className="ant-upload-drag-icon">
-            <InboxOutlined />
-          </p>
-          <p className="ant-upload-text">
-            Click or drag file to this area to upload
-          </p>
-          <p className="ant-upload-hint">
-            Support for a single or bulk upload. Strictly prohibited from
-            uploading company data or other banned files.
-          </p>
-        </Dragger>
-        <Flex gap="small">
-          <Button color="primary" variant="solid" onClick={handleUpload}>
-            Start Rename
-          </Button>
-          <Button
-            type="primary"
-            icon={<DownloadOutlined />}
-            onClick={handleDownload}
-            disabled={uploadStatus}
-          >
-            Download Images as ZIP
-          </Button>
-        </Flex>
+
+        <Form.Item label="Upload Images">
+          <Dragger {...props}>
+            <p className="ant-upload-drag-icon">
+              <InboxOutlined />
+            </p>
+            <p className="ant-upload-text">
+              Click or drag file to this area to upload
+            </p>
+            <p className="ant-upload-hint">
+              Support for a single or bulk upload. Strictly prohibited from
+              uploading company data or other banned files.
+            </p>
+          </Dragger>
+        </Form.Item>
+
+        <Button
+          type="primary"
+          icon={<DownloadOutlined />}
+          onClick={handleDownload}
+          disabled={uploadStatus} // Button is disabled until files are uploaded
+        >
+          Download Images as ZIP
+        </Button>
       </Form>
-      <h1>Upload Images</h1>
-      <input
-        type="text"
-        placeholder="Enter base filename"
-        value={baseFilename}
-        onChange={(e) => setBaseFilename(e.target.value)}
-        required
-      />
-      <input
-        type="number"
-        placeholder="Number of images"
-        value={imageCount}
-        onChange={(e) => setImageCount(Number(e.target.value))}
-        required
-      />
-      <input
-        type="file"
-        multiple
-        accept="image/*"
-        onChange={handleFileChange}
-        required
-      />
-      {/* <button onClick={handleUpload}>Upload Images</button> */}
-      <button onClick={handleDownload}>Download Images as ZIP</button>
     </div>
   );
 }
