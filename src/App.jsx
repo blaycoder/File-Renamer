@@ -13,20 +13,22 @@ function App() {
   // Custom file upload handler with renaming logic
   const handleUpload = async ({ file, onSuccess, onError }) => {
     const formData = new FormData();
-
     //Loop through the uploaded files and rename
-    for (let file_counter = 0; file_counter < files.length; file_counter++) {
-      console.log(file_counter);
-    }
+    files.forEach((file, index) => {
+      const newFilename = `${baseFilename}_${index}${file.name.substring(
+        file.name.lastIndexOf(".")
+      )}`;
+      formData.append("images", file, newFilename);
+    });
 
     // Generate a new filename with baseFilename and index
-    const index = files.length + 1; // Track the index for naming
-    const newFilename = `${baseFilename}_${index}${file.name.substring(
-      file.name.lastIndexOf(".")
-    )}`;
+    // const index = files.length + 1; // Track the index for naming
+    // const newFilename = `${baseFilename}_${index}${file.name.substring(
+    //   file.name.lastIndexOf(".")
+    // )}`;
 
     // Append the file to the FormData with the new filename
-    formData.append("images", file, newFilename);
+    // formData.append("images", file, newFilename);
 
     try {
       await axios.post("http://localhost:3000/upload", formData);
@@ -35,7 +37,7 @@ function App() {
     } catch (error) {
       console.error("Error uploading file:", error);
       onError("Error uploading file");
-      message.error(`Error uploading ${newFilename}`);
+      message.error(`Error uploading ${file.name}`);
     }
   };
 
@@ -46,9 +48,12 @@ function App() {
     customRequest: handleUpload, // Use custom request for file uploads
     onChange(info) {
       const { status } = info.file;
+      const { fileList } = info;
       if (status === "done") {
+        // console.log(info, info.fileList, 'done')
         setUploadStatus(false); // Enable the download button after upload
-        setFiles(info.fileList); // Keep track of uploaded files
+        setFiles(fileList); // Keep track of uploaded files
+        console.log(files)
       } else if (status === "error") {
         message.error(`${info.file.name} file upload failed.`);
       }
