@@ -15,7 +15,6 @@ app.use(
   })
 );
 
-
 // Configure multer storage
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -29,7 +28,12 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // Endpoint to handle image uploads
-app.post("/upload", upload.array("images"), (req, res) => {
+app.post("/upload", upload.none(), (req, res) => {
+  const uploadedFiles = req.files;
+  for (const file of Object.values(uploadedFiles)) {
+    const newFilename = file.originalname;
+    fs.renameSync(file.data, file.path, path.join("uploads", newFilename));
+  }
   res.status(200).send("Images uploaded successfully!");
 });
 

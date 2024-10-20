@@ -1,49 +1,45 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import axios from "axios";
 import { Form, Input, InputNumber, Upload, message, Button } from "antd";
 import { InboxOutlined, DownloadOutlined } from "@ant-design/icons";
 
-export default function App() {
+function App() {
   const [baseFilename, setBaseFilename] = useState("");
   const [imageCount, setImageCount] = useState(0);
   const [files, setFiles] = useState([]);
   const [uploadStatus, setUploadStatus] = useState(true);
   const { Dragger } = Upload;
 
-  // Log files when they change
-  useEffect(() => {
-    if (files.length > 0) {
-      setFiles(files);
-      console.log("Updated files:", files); // This will log the correct files
-    }
-  }, [files]); // This useEffect triggers when 'files' changes
-
   // Custom file upload handler with renaming logic
-  const handleUpload = useCallback(
-    async ({ file, onSuccess, onError }) => {
-      const formData = new FormData();
-      console.log(files);
-      // Loop through the uploaded files and rename
-      Array.from(files).forEach((baseFile, index) => {
-        const newFilename = `${baseFilename}_${
-          index + 1
-        }${baseFile.name.substring(baseFile.name.lastIndexOf("."))}`;
-        formData.append("images", baseFile, newFilename);
-      });
+  const handleUpload = async ({ file, onSuccess, onError }) => {
+    const formData = new FormData();
+    //Loop through the uploaded files and rename
+    files.forEach((file, index) => {
+      const newFilename = `${baseFilename}_${index}${file.name.substring(
+        file.name.lastIndexOf(".")
+      )}`;
+      formData.append("images", file, newFilename);
+    });
 
-      try {
-        await axios.post("http://localhost:3000/upload", formData);
-        // console.log(formData)
-        onSuccess("File uploaded successfully");
-        message.success(`${file.name} uploaded and renamed successfully`);
-      } catch (error) {
-        console.error("Error uploading file:", error);
-        onError("Error uploading file");
-        message.error(`Error uploading ${file.name}`);
-      }
-    },
-    [files, baseFilename]
-  );
+    // Generate a new filename with baseFilename and index
+    // const index = files.length + 1; // Track the index for naming
+    // const newFilename = `${baseFilename}_${index}${file.name.substring(
+    //   file.name.lastIndexOf(".")
+    // )}`;
+
+    // Append the file to the FormData with the new filename
+    // formData.append("images", file, newFilename);
+
+    try {
+      await axios.post("http://localhost:3000/upload", formData);
+      onSuccess("File uploaded successfully");
+      message.success(`${file.name} uploaded and renamed  successfully`);
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      onError("Error uploading file");
+      message.error(`Error uploading ${file.name}`);
+    }
+  };
 
   const props = {
     name: "file",
@@ -54,8 +50,10 @@ export default function App() {
       const { status } = info.file;
       const { fileList } = info;
       if (status === "done") {
+        // console.log(info, info.fileList, 'done')
         setUploadStatus(false); // Enable the download button after upload
         setFiles(fileList); // Keep track of uploaded files
+        console.log(files)
       } else if (status === "error") {
         message.error(`${info.file.name} file upload failed.`);
       }
@@ -65,7 +63,7 @@ export default function App() {
     },
   };
 
-  const handleDownload = useCallback(async () => {
+  const handleDownload = async () => {
     try {
       const response = await axios.get("http://localhost:3000/download", {
         responseType: "blob", // Important for downloading files
@@ -81,7 +79,7 @@ export default function App() {
       console.error("Error downloading the images:", error);
       alert("Error downloading the images.");
     }
-  }, []);
+  };
 
   return (
     <div style={{ padding: "20px" }}>
@@ -140,3 +138,5 @@ export default function App() {
     </div>
   );
 }
+
+export default App;
