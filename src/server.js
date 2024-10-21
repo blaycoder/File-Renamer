@@ -28,13 +28,23 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // Endpoint to handle image uploads
-app.post("/upload", upload.none(), (req, res) => {
+const uploadDir = "uploads";
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir); // Ensure 'uploads' directory exists
+}
+app.post("/upload", upload.array("images"), (req, res) => {
   const uploadedFiles = req.files;
-  for (const file of Object.values(uploadedFiles)) {
-    const newFilename = file.originalname;
-    fs.renameSync(file.data, file.path, path.join("uploads", newFilename));
+  try {
+    for (const file of uploadedFiles) {
+      const newFilename = file.originalname;
+      const newPath = path.join("uploads", newFilename);
+      fs.renameSync(file.path, newPath);
+    }
+    res.status(200).send("Images uploaded successfully!");
+  } catch (error) {
+    console.error("Error uploading images:", error);
+    res.status(500).send("Error uploading images.");
   }
-  res.status(200).send("Images uploaded successfully!");
 });
 
 // Endpoint to download images as a zip file
