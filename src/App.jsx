@@ -16,11 +16,11 @@ export default function App() {
       const formData = new FormData();
 
       // Loop through the uploaded files and rename them
-      if(fileList.length !== imageCount){
-        console.log(fileList)
+      if (fileList.length !== imageCount) {
+        console.log(fileList);
         message.error(`Please upload exactly ${imageCount} images.`);
-        fileList.pop()
-        console.log(fileList)
+        fileList.pop();
+        console.log(fileList);
         return;
       }
       fileList.forEach((baseFile, index) => {
@@ -33,7 +33,7 @@ export default function App() {
       try {
         await axios.post("http://localhost:3000/upload", formData);
         onSuccess("File uploaded successfully");
-        // message.success("Files uploaded and renamed successfully");
+        message.success("Files uploaded and renamed successfully");
       } catch (error) {
         console.error("Error uploading file:", error);
         onError("Error uploading file");
@@ -47,14 +47,9 @@ export default function App() {
     name: "file",
     accept: "image/*",
     multiple: true,
-    maxCount: {imageCount},
     customRequest: handleUpload, // Use custom request for file uploads
     onChange(info) {
       const { fileList: updatedFileList } = info; // Destructure updated fileList
-      // if(updatedFileList.length !== imageCount){
-      //   message.error(`Please upload exactly ${imageCount} images.`);
-      //   return;
-      // }
       setFileList(updatedFileList); // Update the file list when files are selected
       if (info.file.status === "done") {
         setUploadStatus(false); // Enable download button after upload
@@ -79,6 +74,9 @@ export default function App() {
       document.body.appendChild(link);
       link.click();
       link.remove();
+      setBaseFilename("");
+      setImageCount(0);
+      setUploadStatus(true);
     } catch (error) {
       console.error("Error downloading the images:", error);
       alert("Error downloading the images.");
@@ -96,9 +94,7 @@ export default function App() {
           span: 14,
         }}
         layout="horizontal"
-        style={{
-          maxWidth: 600,
-        }}
+      
       >
         <Form.Item label="Base Filename">
           <Input
