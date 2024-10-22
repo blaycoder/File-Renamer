@@ -2,6 +2,9 @@ import { useState, useCallback } from "react";
 import axios from "axios";
 import { Form, Input, InputNumber, Upload, message, Button } from "antd";
 import { InboxOutlined, DownloadOutlined } from "@ant-design/icons";
+import Header from "./components/Header";
+
+
 
 export default function App() {
   const [baseFilename, setBaseFilename] = useState("");
@@ -84,7 +87,8 @@ export default function App() {
   }, []);
 
   return (
-    <div style={{ padding: "20px" }}>
+    <div>
+      <Header />
       <h1 className="text-3xl font-bold underline">File Upload and Rename</h1>
       <Form
         labelCol={{
