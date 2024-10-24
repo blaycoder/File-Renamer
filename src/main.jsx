@@ -15,6 +15,10 @@ if (!PUBLISHABLE_KEY) {
 
 const router = createBrowserRouter([
   {
+    path: "/",
+    element: <App />,
+  },
+  {
     path: "home",
     element: <Home />,
   },
@@ -23,7 +27,6 @@ const router = createBrowserRouter([
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <ClerkProvider publishableKey={PUBLISHABLE_KEY} afterSignOutUrl="/">
-    <App/>
       <RouterProvider router={router} />
     </ClerkProvider>
   </StrictMode>
