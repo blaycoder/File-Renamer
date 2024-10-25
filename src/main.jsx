@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import App from "./App.jsx";
 import "./index.css";
 import { ClerkProvider } from "@clerk/clerk-react";
-import Home from "../routes/Home.jsx";
+import Home from "./routes/Home.jsx";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 // Import your publishable key

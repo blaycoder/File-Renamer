@@ -1,18 +1,3 @@
-// export default function Home(){
-//     return (
-//       <div className="bg-white">
-//         <header className="absolute inset-x-0 top-0 z-50">
-//           <nav
-//             aria-label="Global"
-//             className="flex items-center justify-between p-6 lg:px-8"
-//           ></nav>
-//         </header>
-//         <body>
-//           <h2>HOME</h2>
-//         </body>
-//       </div>
-//     );
-// }
 import PropTypes from "prop-types";
 import { Button, Steps, Card } from "antd";
 import {
@@ -37,19 +22,19 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-md">
+    <div className="min-w-full bg-gray-50">
+      <nav className="bg-blue-600 shadow-md">
         <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-          <div className="text-xl font-bold text-blue-600">ImageRenamer</div>
+          <div className="text-xl font-bold text-white">AutoPicName</div>
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <Button type="primary" className="bg-blue-600 hover:bg-blue-700">
+            <Button type="primary" className="text-blue-600 bg-white hover:bg-blue-700">
               Sign Up
             </Button>
           </motion.div>
         </div>
       </nav>
       {/* Hero Section */}
-      <section className="bg-blue-600 text-white overflow-hidden">
+      <section className="bg-white text-white overflow-hidden">
         <div className="container mx-auto px-4 py-20 flex flex-col md:flex-row items-center">
           <motion.div
             className="md:w-1/2 mb-10 md:mb-0"
@@ -57,10 +42,10 @@ export default function Home() {
             animate="visible"
             variants={slideIn}
           >
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            <h1 className="text-4xl text-blue-600 md:text-5xl font-bold mb-4">
               Effortlessly Rename Your Images in Bulk
             </h1>
-            <p className="text-xl mb-6">
+            <p className="text-xl text-blue-300 mb-6">
               Save time by renaming thousands of images in just a few clicks.
             </p>
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
@@ -80,9 +65,9 @@ export default function Home() {
             variants={fadeIn}
           >
             <img
-              src="https://via.placeholder.com/400x300"
+              src="./src/assets/bulk-upload.png"
               alt="Bulk Image Renaming"
-              className="rounded-lg shadow-lg w-full h-auto"
+              className="rounded-lg w-full h-auto"
             />
           </motion.div>
         </div>
