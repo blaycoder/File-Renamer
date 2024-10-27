@@ -32,34 +32,36 @@ const RegisterPage = () => {
   // Form Submit
   const handleSubmit = async (e) => {
     e.preventDefault();
-    message.success(
-      `${formType.charAt(0).toUpperCase() + formType.slice(1)} successful!`
-    );
-    if (!isLoaded) {
-      return;
-    }
-    if (formType === "signup") {
-      setFormType("otp");
-    } else if (formType === "otp") {
-      setFormType("signin");
-    }
+      try {
+        await signUp.create({
+          first_name: firstName,
+          last_name: lastName,
+          email_address: email,
+          password,
+        });
+        message.success(
+          `${formType.charAt(0).toUpperCase() + formType.slice(1)} successful!`
+        );
+        if (!isLoaded) {
+          return;
+        }
+        if (formType === "signup") {
+          setFormType("otp");
+        } else if (formType === "otp") {
+          setFormType("signin");
+        }
 
-    try {
-      await signUp.create({
-        first_name: firstName,
-        last_name: lastName,
-        email_address: email,
-        password,
-      });
+        // send the email.
+        await signUp.prepareEmailAddressVerification({
+          strategy: "email_code",
+        });
 
-      // send the email.
-      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
-
-      // change the UI to our pending section.
-      setPendingVerification(true);
-    } catch (err) {
-      console.error(err);
-    }
+        // change the UI to our pending section.
+        setPendingVerification(true);
+      } catch (err) {
+        console.error(err);
+        message.error("Sign up failed. Please check your input and try again.");
+      }
   };
 
   // Verify User Email Code
