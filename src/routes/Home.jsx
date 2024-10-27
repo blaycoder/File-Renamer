@@ -7,8 +7,13 @@ import {
   ClockCircleOutlined,
   AppstoreOutlined,
   SmileOutlined,
+  GithubOutlined,
+  TwitterOutlined,
+  LinkedinOutlined
+
 } from "@ant-design/icons";
 import { motion } from "framer-motion";
+import Header from "../components/Header";
 
 export default function Home() {
   const fadeIn = {
@@ -23,16 +28,7 @@ export default function Home() {
 
   return (
     <div className="min-w-full bg-gray-50">
-      <nav className="bg-blue-600 shadow-md">
-        <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-          <div className="text-xl font-bold text-white">AutoPicName</div>
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <Button type="primary" className="text-blue-600 bg-white hover:bg-blue-700">
-              Sign Up
-            </Button>
-          </motion.div>
-        </div>
-      </nav>
+      <Header />
       {/* Hero Section */}
       <section className="bg-white text-white overflow-hidden">
         <div className="container mx-auto px-4 py-20 flex flex-col md:flex-row items-center">
@@ -42,17 +38,17 @@ export default function Home() {
             animate="visible"
             variants={slideIn}
           >
-            <h1 className="text-4xl text-blue-600 md:text-5xl font-bold mb-4">
+            <h1 className="text-4xl text-sky-950 md:text-5xl font-bold mb-4">
               Effortlessly Rename Your Images in Bulk
             </h1>
-            <p className="text-xl text-blue-300 mb-6">
+            <p className="text-xl text-sky-600 mb-6">
               Save time by renaming thousands of images in just a few clicks.
             </p>
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button
                 type="primary"
                 size="large"
-                className="bg-white text-blue-600 hover:bg-gray-100 hover:text-blue-700"
+                className="bg-blue-600 text-white hover:bg-gray-100 hover:text-blue-700"
               >
                 Start Renaming Now
               </Button>
@@ -157,6 +153,88 @@ export default function Home() {
           </motion.div>
         </div>
       </section>
+
+      <footer className="bg-blue-950 text-white py-8">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-wrap justify-between items-center">
+            <div className="w-full md:w-1/3 mb-6 md:mb-0">
+              <h3 className="text-xl font-bold mb-2">AutoPicName</h3>
+              <p className="text-sm text-gray-400">
+                Simplifying image management for everyone.
+              </p>
+            </div>
+            <div className="w-full md:w-1/3 mb-6 md:mb-0">
+              <h4 className="text-lg font-semibold mb-2">Quick Links</h4>
+              <ul className="space-y-2">
+                <li>
+                  <a
+                    href="#"
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    Home
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    Features
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    Pricing
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    Contact
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div className="w-full md:w-1/3">
+              <h4 className="text-lg font-semibold mb-2">Connect With Us</h4>
+              <div className="flex space-x-4">
+                <a
+                  href="#"
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  <GithubOutlined style={{ fontSize: "1.5rem" }} />
+                  <span className="sr-only">GitHub</span>
+                </a>
+                <a
+                  href="#"
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  <TwitterOutlined style={{ fontSize: "1.5rem" }} />
+                  <span className="sr-only">Twitter</span>
+                </a>
+                <a
+                  href="#"
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  <LinkedinOutlined style={{ fontSize: "1.5rem" }} />
+                  <span className="sr-only">LinkedIn</span>
+                </a>
+              </div>
+            </div>
+          </div>
+          <div className="mt-8 pt-8 border-t border-gray-700 text-center text-sm text-gray-400">
+            <p>
+              &copy; {new Date().getFullYear()} ImageRenamer. All rights
+              reserved.
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
