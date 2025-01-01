@@ -2,8 +2,8 @@ import { motion } from "framer-motion";
 import { Button } from "antd";
 import { UserButton, useAuth } from "@clerk/clerk-react";
 
-export default async function Header() {
-  const { userId } = useAuth;
+export default function Header() {
+  const { userId } = useAuth();
   return (
     <header>
       <nav className="bg-blue-950 shadow-md">
@@ -37,7 +37,6 @@ export default async function Header() {
               </>
             )}
             {userId && (
-              <>
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -49,7 +48,6 @@ export default async function Header() {
                     Profile
                   </Button>
                 </motion.div>
-              </>
             )}
             <div className="ml-auto">
               <UserButton />

@@ -1,91 +1,56 @@
 import express from "express";
-import multer from "multer";
-import path from "path";
-import fs from "fs";
-import archiver from "archiver";
 import cors from "cors";
+import { v2 as cloudinary } from "cloudinary";
+import process from "process";
 
 const app = express();
 const PORT = 3000;
 
-// Use CORS to allow requests from the React frontend
 app.use(
   cors({
     origin: "http://localhost:5173",
+    methods: ["GET", "POST"],
+    allowedHeaders: ["Content-Type"],
   })
 );
 
-// Configure multer storage
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads"); // Set the uploads directory
-  },
-  filename: (req, file, cb) => {
-    cb(null, file.originalname); // Use the original filename
-  },
+// Cloudinary configuration
+cloudinary.config({
+  cloud_name: process.env.VITE_CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.VITE_CLOUDINARY_API_KEY,
+  api_secret: process.env.VITE_CLOUDINARY_SECRET_KEY,
 });
 
-const upload = multer({ storage: storage });
-
-// Endpoint to handle image uploads
-const uploadDir = "uploads";
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir); // Ensure 'uploads' directory exists
-}
-app.post("/upload", upload.array("images"), (req, res) => {
-  const uploadedFiles = req.files;
+// Endpoint to fetch resources from Cloudinary
+app.get("/cloudinary/resources", async (req, res) => {
   try {
-    for (const file of uploadedFiles) {
-      const newFilename = file.originalname;
-      const newPath = path.join("uploads", newFilename);
-      fs.renameSync(file.path, newPath);
-    }
-    res.status(200).send("Images uploaded successfully!");
+    const { resources } = await cloudinary.search
+      .expression("folder:uploads") // Adjust to your folder
+      .sort_by("created_at", "desc")
+      .max_results(30)
+      .execute();
+
+    res.status(200).json(resources);
   } catch (error) {
-    console.error("Error uploading images:", error);
-    res.status(500).send("Error uploading images.");
+    console.error("Error fetching resources from Cloudinary:", error);
+    res
+      .status(500)
+      .json({ error: "Failed to fetch resources from Cloudinary" });
   }
 });
 
-// Endpoint to download images as a zip file
-app.get("/download", (req, res) => {
-  const zipFileName = "images.zip";
-  const output = fs.createWriteStream(zipFileName);
-  const archive = archiver("zip");
-
-  output.on("close", () => {
-    console.log(`${archive.pointer()} total bytes`);
-    console.log(
-      "Archiver has been finalized and the output file descriptor has closed."
-    );
-    res.download(zipFileName, (err) => {
-      if (err) {
-        console.error("Download error:", err);
-      }
-      // Optionally delete the zip file after download
-      fs.unlink(zipFileName, (err) => {
-        if (err) console.error("Error deleting zip file:", err);
-      });
-    });
-  });
-
-  archive.on("error", (err) => {
-    throw err;
-  });
-
-  archive.pipe(output);
-  // Add all files from the uploads directory to the zip
-  archive.directory("uploads/", false);
-  archive.finalize();
+app.get("/cloudinary/test", async (req, res) => {
+  try {
+    const result = await cloudinary.api.ping();
+    res
+      .status(200)
+      .json({ message: "Cloudinary connection successful!", result });
+  } catch (error) {
+    console.error("Cloudinary connection failed:", error);
+    res.status(500).json({ error: "Failed to connect to Cloudinary" });
+  }
 });
 
-// Serve static files (optional)
-import { fileURLToPath } from "url";
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server is running on http://localhost:${PORT}`);
 });

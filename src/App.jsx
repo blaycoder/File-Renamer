@@ -1,61 +1,72 @@
-import { useState, useCallback } from "react";
-import axios from "axios";
+import { useState } from "react";
+// import axios from "axios";
+// import {v2 as cloudinary} from "cloudinary";
 import { Form, Input, InputNumber, Upload, message, Button } from "antd";
 import { InboxOutlined, DownloadOutlined } from "@ant-design/icons";
 import Header from "./components/Header";
-
-
 
 export default function App() {
   const [baseFilename, setBaseFilename] = useState("");
   const [imageCount, setImageCount] = useState(0);
   const [uploadStatus, setUploadStatus] = useState(true);
-  const [fileList, setFileList] = useState([]); // Track file list
+  const [fileList, setFileList] = useState([]);
+  const [uploadedImages, setUploadedImages] = useState([]);
   const { Dragger } = Upload;
 
-  // Custom file upload handler with renaming logic
-  const handleUpload = useCallback(
-    async ({ onSuccess, onError }) => {
-      const formData = new FormData();
+  const handleImageUpload = async ({ file, onSuccess, onError }) => {
+    if (!file) {
+      message.error("Please select an image to upload");
+      return;
+    }
 
-      // Loop through the uploaded files and rename them
-      if (fileList.length !== imageCount) {
-        console.log(fileList);
-        message.error(`Please upload exactly ${imageCount} images.`);
-        fileList.pop();
-        console.log(fileList);
-        return;
-      }
-      fileList.forEach((baseFile, index) => {
-        const newFilename = `${baseFilename}_${
-          index + 1
-        }${baseFile.name.substring(baseFile.name.lastIndexOf("."))}`;
-        formData.append("images", baseFile.originFileObj, newFilename); // Use originFileObj for the actual file
-      });
+    // const newFilename = `${baseFilename}_${
+    //   fileList.length + 1
+    // }${file.name.substring(file.name.lastIndexOf("."))}`;
 
-      try {
-        await axios.post("http://localhost:3000/upload", formData);
-        onSuccess("File uploaded successfully");
-        message.success("Files uploaded and renamed successfully");
-      } catch (error) {
-        console.error("Error uploading file:", error);
-        onError("Error uploading file");
-        message.error("Error uploading files");
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append(
+      "upload_preset",
+      import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
+    );
+
+    try {
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/${
+          import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
+        }/image/upload`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to upload image");
       }
-    },
-    [fileList, baseFilename, imageCount] // Watch for changes in fileList and baseFilename
-  );
+
+      const data = await response.json(); // Parse JSON response
+      setUploadedImages((prev) => [...prev, data.public_id]); // Save image public_id
+      onSuccess(data); // Call onSuccess with response data
+      message.success(`${data.original_filename} uploaded successfully`);
+    } catch (error) {
+      message.error("Failed to upload image");
+      console.error("Error uploading image:", error.message);
+      onError(error); // Call onError with error
+    }
+  };
 
   const props = {
     name: "file",
     accept: "image/*",
     multiple: true,
-    customRequest: handleUpload, // Use custom request for file uploads
+    customRequest: handleImageUpload,
     onChange(info) {
-      const { fileList: updatedFileList } = info; // Destructure updated fileList
-      setFileList(updatedFileList); // Update the file list when files are selected
+      const { fileList: updatedFileList } = info;
+      setFileList(updatedFileList);
+
       if (info.file.status === "done") {
-        setUploadStatus(false); // Enable download button after upload
+        setUploadStatus(false);
       } else if (info.file.status === "error") {
         message.error(`${info.file.name} file upload failed.`);
       }
@@ -65,26 +76,20 @@ export default function App() {
     },
   };
 
-  const handleDownload = useCallback(async () => {
-    try {
-      const response = await axios.get("http://localhost:3000/download", {
-        responseType: "blob", // Important for downloading files
-      });
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", "images.zip");
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      setBaseFilename("");
-      setImageCount(0);
-      setUploadStatus(true);
-    } catch (error) {
-      console.error("Error downloading the images:", error);
-      alert("Error downloading the images.");
+const handleDownload = async () => {
+  try {
+    const response = await fetch("http://localhost:3000/cloudinary/resources");
+    if (!response.ok) {
+      throw new Error("Failed to fetch Cloudinary resources");
     }
-  }, []);
+    const data = await response.json();
+    console.log("Cloudinary Resources:", data);
+    message.success("Successfully fetched Cloudinary resources!");
+  } catch (error) {
+    console.error("Error downloading the images:", error);
+    message.error("Error downloading the images.");
+  }
+};
 
   return (
     <div>
@@ -98,7 +103,6 @@ export default function App() {
           span: 14,
         }}
         layout="horizontal"
-      
       >
         <Form.Item label="Base Filename">
           <Input
@@ -134,7 +138,7 @@ export default function App() {
           type="primary"
           icon={<DownloadOutlined />}
           onClick={handleDownload}
-          disabled={uploadStatus} // Button is disabled until files are uploaded
+          disabled={uploadStatus}
         >
           Download Images as ZIP
         </Button>
