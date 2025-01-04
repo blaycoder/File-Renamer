@@ -13,6 +13,26 @@ export default function App() {
   const [uploadedImages, setUploadedImages] = useState([]);
   const { Dragger } = Upload;
 
+  const createUploadFolder = async () => {
+    try {
+      const response = await fetch("http://localhost:3000/api/create-folder", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to create folder");
+      }
+
+      const data = await response.json();
+      console.log("Folder created:", data);
+    } catch (error) {
+      console.error("Error creating folder:", error);
+    }
+  };
+
   const handleImageUpload = async ({ file, onSuccess, onError }) => {
     if (!file) {
       message.error("Please select an image to upload");
@@ -54,6 +74,7 @@ export default function App() {
       console.error("Error uploading image:", error.message);
       onError(error); // Call onError with error
     }
+    createUploadFolder();
   };
 
   const props = {
@@ -76,20 +97,22 @@ export default function App() {
     },
   };
 
-const handleDownload = async () => {
-  try {
-    const response = await fetch("http://localhost:3000/cloudinary/resources");
-    if (!response.ok) {
-      throw new Error("Failed to fetch Cloudinary resources");
+  const handleDownload = async () => {
+    try {
+      const response = await fetch(
+        "http://localhost:3000/cloudinary/resources"
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch Cloudinary resources");
+      }
+      const data = await response.json();
+      console.log("Cloudinary Resources:", data);
+      message.success("Successfully fetched Cloudinary resources!");
+    } catch (error) {
+      console.error("Error downloading the images:", error);
+      message.error("Error downloading the images.");
     }
-    const data = await response.json();
-    console.log("Cloudinary Resources:", data);
-    message.success("Successfully fetched Cloudinary resources!");
-  } catch (error) {
-    console.error("Error downloading the images:", error);
-    message.error("Error downloading the images.");
-  }
-};
+  };
 
   return (
     <div>
