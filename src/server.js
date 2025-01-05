@@ -1,28 +1,31 @@
 import express from "express";
 import axios from "axios";
-import "dotenv/config";
-import { Buffer } from "buffer";
-import process from "process";
 import cors from "cors";
+import dotenv from "dotenv"
 
+dotenv.config();
 const app = express();
 app.use(cors());
 const PORT = 3000;
 
 app.use(express.json());
 
+const cloudName = process.env.VITE_CLOUDINARY_CLOUD_NAME;
+const apiKey = process.env.VITE_CLOUDINARY_API_KEY;
+const secretKey = process.env.VITE_CLOUDINARY_SECRET_KEY;
+
 app.post("/api/create-folder", async (req, res) => {
   const name = "upload-folder";
   try {
     const response = await axios.post(
-      `https://api.cloudinary.com/v1_1/${process.env.VITE_CLOUDINARY_CLOUD_NAME}/folders/${name}`,
+      `https://api.cloudinary.com/v1_1/${cloudName}/folders/${name}`,
+      {}, // Axios requires an empty body for POST if no payload
       {
+        auth: {
+          username: apiKey,
+          password: secretKey,
+        },
         headers: {
-          Authorization: `Basic ${Buffer.from(
-            process.env.VITE_CLOUDINARY_API_KEY +
-              ":" +
-              process.env.VITE_CLOUDINARY_SECRET_KEY
-          ).toString("base64")}`,
           "Content-Type": "application/json",
         },
       }
@@ -39,5 +42,6 @@ app.post("/api/create-folder", async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(secretKey);
+  console.log(`🚀 Server is running on port ${PORT}`);
 });
